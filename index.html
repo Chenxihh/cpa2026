@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#0e242d" />
+    <title>CPA 40 · 审计 × 税法冲刺系统</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="study.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand-lockup"><div class="brand-mark">40</div><div><p class="eyebrow">CPA PASS STUDIO</p><h1>审计 × 税法</h1></div></div>
+        <button class="icon-button" id="openFocus" aria-label="开始专注学习">↗</button>
+      </header>
+      <main id="app" class="page-stack"></main>
+      <nav class="bottom-nav" aria-label="主导航">
+        <button class="nav-item active" data-view="home"><span>⌂</span><small>今日</small></button>
+        <button class="nav-item" data-view="plan"><span>◷</span><small>计划</small></button>
+        <button class="nav-item" data-view="library"><span>⌘</span><small>知识库</small></button>
+        <button class="nav-item" data-view="questions"><span>♢</span><small>题库</small></button>
+        <button class="nav-item" data-view="review"><span>↻</span><small>复习</small></button>
+      </nav>
+    </div>
+    <div class="modal-backdrop hidden" id="modalBackdrop"><section class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><button class="modal-close" id="closeModal" aria-label="关闭">×</button><p class="eyebrow" id="modalEyebrow">PREPARED STUDY NOTE</p><h2 id="modalTitle">学习解析</h2><div id="modalContent" class="modal-content"></div></section></div>
+    <script src="content.js"></script>
+    <script src="imported_questions.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

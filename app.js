@@ -24,27 +24,7 @@ const chapterQuestions = chapterLibrary.map((k,i)=>({id:1000+i,subject:k.s,type:
 function classifyImported(text,subject){const rules=subject==='审计'?[['独立性','独立性'],['职业道德','职业道德基本原则'],['函证|审计证据|分析程序','审计证据'],['抽样|货币单元','审计抽样方法'],['计划|重要性|错报','审计计划'],['风险评估|重大错报风险|了解被审计单位','风险评估'],['控制测试|实质性程序|风险应对','风险应对'],['销售|收款|收入','销售与收款循环'],['存货|生产|监盘','生产与存货循环'],['货币资金|银行存款','货币资金'],['舞弊|法律法规','对舞弊和法律法规的考虑'],['治理层|前任|后任|沟通','审计沟通'],['专家|内部审计|集团','利用他人的工作'],['会计估计|关联方|持续经营|期后|书面声明','其他特殊项目'],['审计报告|意见类型|关键审计事项','审计报告'],['内部控制|质量管理|项目质量复核','企业内部控制审计']]:[['增值税|进项税|销项税|留抵','增值税法'],['消费税|卷烟|白酒|小汽车','消费税法'],['企业所得税|纳税调整|扣除项目|应纳税所得额','企业所得税法'],['个人所得税|工资|综合所得|专项附加','个人所得税法'],['关税|船舶吨税','关税法和船舶吨税法'],['资源税|环境保护税|污染物','资源税法和环境保护税法'],['土地增值税|契税|房产税','房产税法、契税法和土地增值税法'],['车船税|车辆购置税|印花税','车辆购置税法、车船税法和印花税法'],['国际税收|常设机构|受益所有人|转让定价','国际税收税务管理实务'],['征收管理|纳税申报|税务机关|行政复议','税收征收管理法'],['城镇土地使用税|耕地占用税','城镇土地使用税法和耕地占用税法']];for(const [re,c] of rules)if(new RegExp(re).test(text))return c;return subject==='审计'?'审计概述':'税法总论';}
 function importedQuestion(q){const chapter=classifyImported(q.text,q.subject);const k=chapterLibrary.find(x=>x.c===chapter)||chapterLibrary.find(x=>x.s===q.subject)||chapterLibrary[0];return {...q,type:'资料母题',chapter,title:q.text,answer:`学习版答案与解析：本题应先按“${k.flow}”拆解。核心判断依据：${k.points.slice(0,2).join('；')}。原资料未提供标准答案，本解析按当前学习资料整理，建议二刷时结合题干条件逐项核对。`,reason:`易错点：${k.points[2]||k.points[0]}`,imported:true};}
 const questionBank = [...questions,...chapterQuestions,...importedQuestions.map(importedQuestion)];
-const state = JSON.parse(
-    localStorage.getItem("cpa40-state") ||
-    JSON.stringify({
-        completed: [],
-        wrong: [],
-        daily:{
-    "2026-07-14":{
-        studyMinutes:120,
-        completed:[1,2],
-        review:true
-    },
-
-    "2026-07-15":{
-        studyMinutes:60,
-        completed:[3]
-    }
-},
-        streak: 0,
-        lastOpen: null
-    })
-);
+const state = JSON.parse(localStorage.getItem('cpa40-state') || '{"completed":[],"wrong":[],"studyMinutes":0,"streak":0}');
 const app = document.querySelector('#app');
 let currentView = 'home';
 const daysUntil = date => Math.max(0, Math.ceil((date - today) / 86400000));
@@ -74,26 +54,8 @@ function renderQuestions(){app.innerHTML=`<section class="view"><div class="sect
 function renderReview(){app.innerHTML=`<section class="view"><div class="section-head"><div><p class="eyebrow">SPACED REPETITION</p><h2>复习队列</h2></div><span class="tag">3天后复习</span></div><section class="hero" style="min-height:180px;background:#dcecef;color:var(--ink)"><p class="eyebrow" style="color:#2d6675">REVIEW RHYTHM</p><h2 style="font-size:25px;max-width:260px">今天学会，3天后再遇见。</h2><p class="hero-copy" style="color:var(--ink-soft)">完成任务后自动进入复习队列。复习只问三件事：能不能讲、能不能辨、能不能做。</p></section><div class="section-head"><h2>待复习</h2><span class="tag">${state.completed.length?'3':'暂无'} 个到期</span></div><article class="review-card"><div class="review-date"><span>今天 · 复习</span><span>理解 + 回忆</span></div><h3>审计：风险—程序—证据主线</h3><p class="task-meta">尝试不看资料，用三句话解释审计如何形成意见。</p><div class="question-actions" style="margin-top:12px"><button class="primary-button" data-prebuilt="review">开始3分钟复习</button><button class="secondary-button" data-view-jump="library">看知识卡</button></div></article><article class="review-card"><div class="review-date"><span>3天后 · 自动提醒</span><span>错题复盘</span></div><h3>税法：增值税销项税与进项税</h3><p class="task-meta">重新做一道综合题，并记录“错在识别、公式还是计算”。</p></article><p class="insight">复习节奏：当天理解 → 第3天回忆 → 第7天再做题。当前版本先实现3天提醒，后续可继续扩展7天节点。</p></section>`;}
 function openModal(title,eyebrow,html){document.querySelector('#modalTitle').textContent=title;document.querySelector('#modalEyebrow').textContent=eyebrow;document.querySelector('#modalContent').innerHTML=html;document.querySelector('#modalBackdrop').classList.remove('hidden');}
 function bindPrepared(){document.querySelectorAll('[data-explain]').forEach(btn=>btn.onclick=()=>{const k=btn.dataset.explain;if(k==='quick')openModal('章节速记','PREPARED EXPLANATION',`<p>${btn.dataset.text}</p><div class="answer"><strong>学习动作</strong><br>先复述主线，再打开对应章节学习页，最后完成一题。</div>`);if(k==='answer')openModal('题目解析','PREPARED ANSWER',`<p>${btn.dataset.title}</p><div class="answer"><strong>结论</strong><br>${btn.dataset.answer}<br><br><strong>易错原因</strong><br>${btn.dataset.reason}</div>`);if(k==='reason')openModal('错因提示','PREPARED ERROR NOTE',`<p>这道题的主要失分点：<strong>${btn.dataset.reason}</strong></p><div class="answer"><strong>复盘顺序</strong><br>重新读题 → 圈出条件 → 写出规则/公式 → 再算一次。</div>`);});document.querySelectorAll('[data-prebuilt]').forEach(btn=>btn.onclick=()=>{if(btn.dataset.prebuilt==='quiz')openModal('今日重点小测','PREPARED QUIZ',`<p>本组题目已按资料中的高频章节预先整理：</p><ul><li>增值税：征税范围与税率辨析</li><li>企业所得税：纳税调整</li><li>审计：函证控制</li><li>审计：意见类型判断</li><li>土地增值税：扣除项目</li></ul><button class="primary-button" data-go-view="questions">进入题库</button>`);if(btn.dataset.prebuilt==='review')openModal('3分钟复习','PREPARED REVIEW',`<p>请合上资料，完成这条口述：</p><div class="answer">“审计首先识别____，再针对____设计程序，获取____，最后形成____。”</div><p>说完后打开对应章节卡，核对关键词。</p>`);});}
-function bindComplete(){document.querySelectorAll('[data-complete]').forEach(btn=>btn.onclick=()=>{const i=Number(btn.dataset.complete);if(state.completed.includes(i))state.completed=state.completed.filter(x=>x!==i);else{state.completed.push(i);state.streak=Math.max(state.streak||0,1);state.daily[todayKey].studyMinutes +=
-    scheduleTemplates[i][3]*60;}save();document.querySelector('#modalBackdrop').classList.add('hidden');render(currentView);});document.querySelectorAll('[data-wrong]').forEach(btn=>btn.onclick=()=>{const i=Number(btn.dataset.wrong);state.wrong=state.wrong.includes(i)?state.wrong.filter(x=>x!==i):[...state.wrong,i];save();render(currentView);});}
+function bindComplete(){document.querySelectorAll('[data-complete]').forEach(btn=>btn.onclick=()=>{const i=Number(btn.dataset.complete);if(state.completed.includes(i))state.completed=state.completed.filter(x=>x!==i);else{state.completed.push(i);state.streak=Math.max(state.streak||0,1);state.studyMinutes=(state.studyMinutes||0)+scheduleTemplates[i][3]*60;}save();document.querySelector('#modalBackdrop').classList.add('hidden');render(currentView);});document.querySelectorAll('[data-wrong]').forEach(btn=>btn.onclick=()=>{const i=Number(btn.dataset.wrong);state.wrong=state.wrong.includes(i)?state.wrong.filter(x=>x!==i):[...state.wrong,i];save();render(currentView);});}
 function render(view='home'){currentView=view;document.querySelectorAll('.nav-item').forEach(x=>x.classList.toggle('active',x.dataset.view===view));({home:renderHome,plan:renderPlan,library:renderLibrary,questions:renderQuestions,review:renderReview}[view]||renderHome)();bindComplete();bindPrepared();bindStudy();document.querySelectorAll('[data-view-jump]').forEach(x=>x.onclick=()=>render(x.dataset.viewJump));}
-
-function todayString(){
-    return new Date().toISOString().slice(0,10);
-}
-const todayKey = todayString();
-
-if(!state.daily[todayKey]){
-
-    state.daily[todayKey]={
-        studyMinutes:0,
-        completed:[]
-    }
-
-    save();
-}
-
-
 document.querySelectorAll('.nav-item').forEach(btn=>btn.onclick=()=>render(btn.dataset.view));
 document.querySelector('#openFocus').onclick=()=>openModal('开始专注学习','FOCUS MODE','<p>选择一个25分钟学习块，完成后记得点击今日任务右侧的圆点。</p><div class="answer"><strong>推荐顺序</strong><br>10分钟理解知识卡 → 10分钟做1道母题 → 5分钟口述/背诵。</div><button class="primary-button" data-close-modal>开始25分钟</button>');
 document.querySelector('#closeModal').onclick=()=>document.querySelector('#modalBackdrop').classList.add('hidden');

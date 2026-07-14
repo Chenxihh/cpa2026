@@ -23,12 +23,22 @@ const chapterQuestions = chapterLibrary.map((k,i)=>({id:1000+i,subject:k.s,type:
 function classifyImported(text,subject){const rules=subject==='审计'?[['独立性','独立性'],['职业道德','职业道德基本原则'],['函证|审计证据|分析程序','审计证据'],['抽样|货币单元','审计抽样方法'],['计划|重要性|错报','审计计划'],['风险评估|重大错报风险|了解被审计单位','风险评估'],['控制测试|实质性程序|风险应对','风险应对'],['销售|收款|收入','销售与收款循环'],['存货|生产|监盘','生产与存货循环'],['货币资金|银行存款','货币资金'],['舞弊|法律法规','对舞弊和法律法规的考虑'],['治理层|前任|后任|沟通','审计沟通'],['专家|内部审计|集团','利用他人的工作'],['会计估计|关联方|持续经营|期后|书面声明','其他特殊项目'],['审计报告|意见类型|关键审计事项','审计报告'],['内部控制|质量管理|项目质量复核','企业内部控制审计']]:[['增值税|进项税|销项税|留抵','增值税法'],['消费税|卷烟|白酒|小汽车','消费税法'],['企业所得税|纳税调整|扣除项目|应纳税所得额','企业所得税法'],['个人所得税|工资|综合所得|专项附加','个人所得税法'],['关税|船舶吨税','关税法和船舶吨税法'],['资源税|环境保护税|污染物','资源税法和环境保护税法'],['土地增值税|契税|房产税','房产税法、契税法和土地增值税法'],['车船税|车辆购置税|印花税','车辆购置税法、车船税法和印花税法'],['国际税收|常设机构|受益所有人|转让定价','国际税收税务管理实务'],['征收管理|纳税申报|税务机关|行政复议','税收征收管理法'],['城镇土地使用税|耕地占用税','城镇土地使用税法和耕地占用税法']];for(const [re,c] of rules)if(new RegExp(re).test(text))return c;return subject==='审计'?'审计概述':'税法总论';}
 function importedQuestion(q){const chapter=classifyImported(q.text,q.subject);const k=chapterLibrary.find(x=>x.c===chapter)||chapterLibrary.find(x=>x.s===q.subject)||chapterLibrary[0];return {...q,type:'资料母题',chapter,title:q.text,answer:`学习版答案与解析：本题应先按“${k.flow}”拆解。核心判断依据：${k.points.slice(0,2).join('；')}。原资料未提供标准答案，本解析按当前学习资料整理，建议二刷时结合题干条件逐项核对。`,reason:`易错点：${k.points[2]||k.points[0]}`,imported:true};}
 const questionBank = [...questions,...chapterQuestions,...importedQuestions.map(importedQuestion)];
-const state = JSON.parse(localStorage.getItem('cpa40-state') || '{"completed":[],"wrong":[],"studyMinutes":0,"streak":0}');
+// 修改 state 初始化代码：
+const state = JSON.parse(localStorage.getItem('cpa40-state') || '{"completed":[],"wrong":[],"studyMinutes":0,"streak":0,"lastDate":""}');
+const todayStr = new Date().toLocaleDateString();
+if (state.lastDate !== todayStr) {
+    state.studyMinutes = 0; // 新的一天，重置今日时长
+    state.lastDate = todayStr; // 更新日期记录
+    save(); // 保存状态
+}
 const app = document.querySelector('#app');
 let currentView = 'home';
 const daysUntil = date => Math.max(0, Math.ceil((date - today) / 86400000));
 const dateForDay = day => { const d = new Date(today); d.setDate(d.getDate() + day - 1); return d.toLocaleDateString('zh-CN',{month:'numeric',day:'numeric',weekday:'short'}); };
-const save = () => localStorage.setItem('cpa40-state', JSON.stringify(state));
+const save = () => {
+    state.lastDate = new Date().toLocaleDateString(); // 确保每次保存都带上日期
+    localStorage.setItem('cpa40-state', JSON.stringify(state));
+};
 const subjectCount = subject => scheduleTemplates.filter(x => x[0] === subject).length;
 const completedCount = subject => scheduleTemplates.filter((x,i) => (!subject || x[0] === subject) && state.completed.includes(i)).length;
 const pct = subject => Math.round(completedCount(subject) / subjectCount(subject) * 100);
